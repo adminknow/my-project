@@ -6,7 +6,7 @@
     },
     {
       "source": "/api/:path*",
-      "destination": "https://wxdemo.51zykj.com/toray-exam-api-e/api/:path*"
+      "destination": "https://wxdemo.51zykj.com/toray-exam-api-e/:path*"
     }
   ]
 }
