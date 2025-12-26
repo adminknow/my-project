@@ -1,9 +1,9 @@
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-import path from 'node:path'
-import AutoImport from 'unplugin-auto-import/vite'
-import Components from 'unplugin-vue-components/vite'
-import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
+import { defineConfig } from "vite";
+import vue from "@vitejs/plugin-vue";
+import path from "node:path";
+import AutoImport from "unplugin-auto-import/vite";
+import Components from "unplugin-vue-components/vite";
+import { ElementPlusResolver } from "unplugin-vue-components/resolvers";
 export default defineConfig({
   plugins: [
     vue(),
@@ -16,8 +16,8 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, 'src')
-    }
+      "@": path.resolve(__dirname, "src"),
+    },
   },
   // 引入第三方的配置,强制预构建插件包
   optimizeDeps: {
@@ -31,17 +31,18 @@ export default defineConfig({
     sourcemap: false, // 构建后是否生成 source map 文件
     // 启用/禁用CSS代码拆分，如果禁用，整个项目的所有CSS将被提取到一个CSS文件中,默认true
     cssCodeSplit: true,
-    minify: "terser", // 混淆器，terser构建后文件体积更小
-    terserOptions: {
-      /**
-       * command 用来判断环境
-       */
-      compress: {
-        drop_console: true,
-        // 默认是true
-        drop_debugger: true,
-      },
-    },
+    minify: "esbuild",
+    // minify: "terser", // 混淆器，terser构建后文件体积更小
+    // terserOptions: {
+    //   /**
+    //    * command 用来判断环境
+    //    */
+    //   compress: {
+    //     drop_console: true,
+    //     // 默认是true
+    //     drop_debugger: true,
+    //   },
+    // },
   },
   // 本地运行配置，及反向代理配置
   server: {
@@ -65,4 +66,4 @@ export default defineConfig({
       },
     },
   },
-})
+});
