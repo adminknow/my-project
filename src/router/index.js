@@ -34,11 +34,6 @@ const routes = [
         meta: { title: "角色" },
       },
       {
-        path: "/roleInfo",
-        component: () => import("@/views/basic/roleInfo.vue"),
-        meta: { title: "角色详情" },
-      },
-      {
         path: "/user",
         component: () => import("@/views/basic/user.vue"),
         meta: { title: "用户" },
