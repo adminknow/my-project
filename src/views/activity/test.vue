@@ -88,7 +88,6 @@ const SearchCondition = reactive({
     exam_type: 0,
     get_total_staff_count: 1,
     get_total_test_staff_count: 1,
-
 });
 // 初始化数据
 const SearchVideoResponsesApi = async () => {

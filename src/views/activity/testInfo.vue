@@ -39,6 +39,50 @@
                         </el-form-item>
                     </el-col>
                 </el-row>
+                <el-row v-if="form.ExamType == 0">
+                    <el-col :span="10">
+                        <el-form-item label="读完培训资料">
+                            <el-switch v-model="form.jsonConfig.NeedReadTrainingResponse"></el-switch>
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="10">
+                        <el-form-item label="读完其中一件资料">
+                            <el-switch v-model="form.jsonConfig.OnlyReadOneTrainingResponse"></el-switch>
+                        </el-form-item>
+                    </el-col>
+                </el-row>
+                <el-row v-if="form.ExamType == 0">
+                    <el-col :span="6">
+                        <el-form-item label="需完成的资料">
+                            <el-select v-model="form.jsonConfig.TrainingResponseType"
+                                @change="changeTrainingResponseType" filterable clearable placeholder="请选择学习内容"
+                                style="width:100%">
+                                <el-option label="学习资料" value="1">
+                                </el-option>
+                                <el-option label="视频内容" value="2">
+                                </el-option>
+                            </el-select>
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="10">
+                        <el-form-item label="" label-width="10px">
+                            <div style="display: flex;">
+                                <el-button plain type="primary" @click="addMaterial">添加素材</el-button>
+                                <el-popover placement="top-start" trigger="click">
+                                    <template #reference>
+                                        <p style="padding-left: 6px;cursor: pointer;">{{ selMaterialItemsDesc }}</p>
+                                    </template>
+                                    <template #default>
+                                        <div v-for="(item, index) in form.Ext_Responses" :key="index">
+                                            {{ item.title }}
+                                        </div>
+                                    </template>
+                                </el-popover>
+                            </div>
+
+                        </el-form-item>
+                    </el-col>
+                </el-row>
                 <el-row>
                     <el-col :span="10">
                         <el-form-item label="">
@@ -67,11 +111,14 @@
         <exam-component :visible="examVisible" :questionType="questionType" :examItem="examItem"
             :ExamType="form.ExamType" @closeVisible="closeVisible"></exam-component>
 
+        <!-- 选择素材弹窗 -->
+        <material-component :visible="materialMaterial" @closeVisible="closeVisibleMaterial"></material-component>
     </div>
 </template>
 <script setup>
 import breadcrumbComponent from "@/components/common/breadcrumb.vue";
 import examComponent from "@/components/basic/modal/exam.vue";
+import materialComponent from "@/components/basic/modal/material.vue";
 import examListComponent from "@/components/basic/examList.vue";
 import { ref, reactive } from "vue";
 import { GetExam, SaveExam } from "@/api/common.js";
@@ -84,6 +131,8 @@ const btnLoading = ref(false);
 const formRef = ref(null);
 const examVisible = ref(false);
 const examItem = ref({});//用于编辑弹窗显示
+const materialMaterial = ref(false);//添加素材弹窗
+const selMaterialItemsDesc = ref("");//选中的素材数据
 const rules = {
     ExamTitle: [
         { required: true, message: "请输入标题", trigger: "blur" },
@@ -96,13 +145,22 @@ const rules = {
     ],
 
 };
+
 const form = reactive({
     ExamID: 0,
     ExamType: 1,//类型(0:考卷;1:问卷调查)
     BeginTime: "",
     EndTime: "",
     Ext_ExamItems: [],
-    Ext_I18n: {}
+    Ext_I18n: {},
+    ExamConfig: "",
+    Ext_Responses: [],
+    jsonConfig: {
+        TrainingResponseType: "",//1 pdf,2 视频
+        OnlyReadOneTrainingResponse: false,//是否只需要读完所有培训资料中的一件就可以
+        NeedReadTrainingResponse: false,//是否需要读完培训资料
+        PrivateExtConfig: "",//保存自定义json数据
+    },
 });
 const GetExamApi = async (ID) => {
     const res = await GetExam({
@@ -113,6 +171,14 @@ const GetExamApi = async (ID) => {
         Object.assign(form, res.DataMap);
         form.EndTime = res.DataMap.Ext_EndTimeStr;
         form.BeginTime = res.DataMap.Ext_BeginTimeStr;
+        form.jsonConfig = JSON.parse(res.DataMap.ExamConfig || "{}");
+        if (res.DataMap.Ext_Responses.length > 0) {
+            if (form.jsonConfig.TrainingResponseType == '1') {
+                selMaterialItemsDesc.value = "您当前选择了" + res.DataMap.Ext_Responses.length + "个pdf素材";
+            } else {
+                selMaterialItemsDesc.value = "您当前选择了" + res.DataMap.Ext_Responses.length + "个视频素材";
+            }
+        }
     }
 }
 //选中的一个题目详情
@@ -149,6 +215,7 @@ const onSubmit = () => {
     formRef.value.validate(async (valid) => {
         if (valid) {
             btnLoading.value = true;
+            form.ExamConfig=JSON.stringify(form.jsonConfig)
             let res = await SaveExam({ Exam: form });
             btnLoading.value = false;
             if (res.Code == 200) {
@@ -170,6 +237,33 @@ const onSubmit = () => {
 const addQuestion = () => {
     examItem.value = {};
     examVisible.value = true
+}
+//切换培训自考类型的时候，需要清空数据
+const changeTrainingResponseType = (val) => {
+    selMaterialItemsDesc.value = "";
+    form.Ext_Responses = [];
+}
+const addMaterial = () => {
+    materialMaterial.value = true;
+}
+const closeVisibleMaterial = (val) => {
+    console.log(val)
+    // 合并并去重选中的素材
+    const incoming = Array.isArray(val?.data) ? val.data : [];
+    const seen = new Set();
+    const merged = [...form.Ext_Responses, ...incoming].filter((item) => {
+        const key = item.ResponseID;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
+    form.Ext_Responses = merged;
+    if (form.jsonConfig.TrainingResponseType == '1') {
+        selMaterialItemsDesc.value = "您当前选择了" + form.Ext_Responses.length + "个pdf素材";
+    } else {
+        selMaterialItemsDesc.value = "您当前选择了" + form.Ext_Responses.length + "个视频素材";
+    }
+    materialMaterial.value = false;
 }
 const onReturn = () => {
     router.go(-1);

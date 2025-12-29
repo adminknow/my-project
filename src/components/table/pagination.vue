@@ -52,8 +52,10 @@ const props = defineProps({
         default: false,
     },
 });
+const currentPage = defineModel('currentPage', { type: Number, default: 1 });
+const pageSize = defineModel('pageSize', { type: Number, default: 15 });
 // //使用父组件传递过来的值
-const { currentPage, pageSize, total, pageSizes, disabled, layout, background, hideOnSinglePage } = toRefs(props);
+const { total, pageSizes, disabled, layout, background, hideOnSinglePage } = toRefs(props);
 // 定义事件
 const emit = defineEmits([
     "update:currentPage",
