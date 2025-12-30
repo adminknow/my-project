@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/test",
+      "destination": "https://httpbin.org/get"
+    },
+    {
+      "source": "/api/:path*",
+      "destination": "https://wxdemo.51zykj.com/toray-exam-api-e/:path*"
+    }
+  ]
+}
