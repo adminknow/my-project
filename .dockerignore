@@ -1,0 +1,8 @@
+echo "node_modules
+.git
+.gitignore
+README.md
+vercel.json
+.env
+*.log
+.DS_Store" > .dockerignore
